@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>绚丽星空烟花</title>
+<title>星空烟花</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{
@@ -17,85 +17,204 @@ canvas{display:block;}
 <script>
 const canvas = document.getElementById("fire");
 const ctx = canvas.getContext("2d");
-function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
+
+function resize(){
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+}
 resize();
-window.onresize=resize;
+window.addEventListener("resize", resize);
 
 // 背景闪烁星星
 const stars = [];
-for(let i=0;i<300;i++){
+for(let i = 0; i < 300; i++){
   stars.push({
     x: Math.random() * canvas.width,
     y: Math.random() * canvas.height,
     r: Math.random() * 1.3,
     twinkle: Math.random() * 0.022
-  })
+  });
 }
 
-let particles=[];
+let particles = [];
+let rockets = [];
+
+const colors = [
+  "#ff4757",
+  "#fffa65",
+  "#70a1ff",
+  "#2ed573",
+  "#ffa502",
+  "#ff6b81",
+  "#a55eea",
+  "#22d2d0"
+];
+
+// 爆炸粒子
 class Particle{
-  constructor(x,y,color){
-    this.x=x;
-    this.y=y;
-    // 速度，增加重力
-    this.sx=(Math.random()-0.5)*7;
-    this.sy=(Math.random()-0.5)*7 - 2;
+  constructor(x, y, color){
+    this.x = x;
+    this.y = y;
+    this.sx = (Math.random() - 0.5) * 7;
+    this.sy = (Math.random() - 0.5) * 7 - 2;
     this.gravity = 0.06;
-    this.alpha=1;
-    this.color=color;
-    this.size=Math.random()*2.5+1;
-    this.decay = 0.008 + Math.random()*0.006;
+    this.alpha = 1;
+    this.color = color;
+    this.size = Math.random() * 2.5 + 1;
+    this.decay = 0.008 + Math.random() * 0.006;
   }
+
   update(){
-    this.sy += this.gravity; // 重力向下拉
-    this.x+=this.sx;
-    this.y+=this.sy;
+    this.sy += this.gravity;
+    this.x += this.sx;
+    this.y += this.sy;
     this.alpha -= this.decay;
   }
+
   draw(){
     ctx.save();
-    ctx.globalAlpha=this.alpha;
-    ctx.fillStyle=this.color;
+    ctx.globalAlpha = this.alpha;
+    ctx.fillStyle = this.color;
     ctx.beginPath();
-    ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
   }
 }
 
-// 点击触发烟花
-document.addEventListener("click",e=>{
-  const colors=["#ff4757","#fffa65","#70a1ff","#2ed573","#ffa502","#ff6b81","#a55eea","#22d2d0"];
-  const color = colors[Math.floor(Math.random()*colors.length)];
-  // 第一层爆炸
-  for(let i=0;i<100;i++){
-    particles.push(new Particle(e.clientX,e.clientY,color))
+// 烟花火箭
+class Rocket{
+  constructor(targetX, targetY){
+    this.x = Math.random() * canvas.width;
+    this.y = canvas.height;
+    this.targetX = targetX;
+    this.targetY = targetY;
+
+    // 水平方向慢慢靠近目标点
+    this.sx = (this.targetX - this.x) * 0.015;
+
+    // 初始上升速度
+    this.sy = -10;
+
+    this.alpha = 1;
+    this.color = colors[Math.floor(Math.random() * colors.length)];
+    this.exploded = false;
   }
-  // 第二层，不同颜色的外圈烟花，层次感更强
-  const color2 = colors[Math.floor(Math.random()*colors.length)];
-  for(let i=0;i<40;i++){
-    particles.push(new Particle(e.clientX,e.clientY,color2))
+
+  update(){
+    this.x += this.sx;
+    this.y += this.sy;
+
+    // 火箭飞到目标高度或开始下降时爆炸
+    if(this.y <= this.targetY && !this.exploded){
+      this.explode();
+    }
+
+    // 防止火箭一直往上飞，超过目标后也爆炸
+    if(this.sy >= 0 && !this.exploded){
+      this.explode();
+    }
   }
-})
+
+  explode(){
+    this.exploded = true;
+
+    const c1 = this.color;
+    const c2 = colors[Math.floor(Math.random() * colors.length)];
+    const c3 = colors[Math.floor(Math.random() * colors.length)];
+
+    // 主爆炸
+    for(let i = 0; i < 120; i++){
+      particles.push(new Particle(this.x, this.y, c1));
+    }
+
+    // 外圈烟花
+    for(let i = 0; i < 60; i++){
+      particles.push(new Particle(this.x, this.y, c2));
+    }
+
+    // 中心闪光粒子
+    for(let i = 0; i < 40; i++){
+      const p = new Particle(this.x, this.y, c3);
+      p.sx *= 1.4;
+      p.sy = p.sy * 1.4 - 1;
+      p.size = Math.random() * 2 + 1;
+      particles.push(p);
+    }
+  }
+
+  draw(){
+    if(!this.exploded){
+      ctx.save();
+      ctx.globalAlpha = this.alpha;
+
+      // 火箭拖尾
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 淡淡光晕
+      ctx.globalAlpha = this.alpha * 0.4;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, 8, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+  }
+}
+
+// 手动点击：发射火箭到点击位置
+document.addEventListener("click", e => {
+  rockets.push(new Rocket(e.clientX, e.clientY));
+});
+
+// 自动随机烟花
+function autoFire(){
+  const randomX = Math.random() * canvas.width;
+  const randomY = canvas.height * (0.15 + Math.random() * 0.4);
+
+  rockets.push(new Rocket(randomX, randomY));
+
+  // 自动间隔：1.2 ~ 3 秒一发
+  setTimeout(autoFire, 1200 + Math.random() * 1800);
+}
+autoFire();
 
 function render(){
   requestAnimationFrame(render);
-  // 拖尾，降低透明度，做出残影
-  ctx.fillStyle="rgba(4,4,15,0.08)";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  // 绘制闪烁背景星星
-  stars.forEach(s=>{
+  // 拖尾背景
+  ctx.fillStyle = "rgba(4, 4, 15, 0.08)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // 绘制背景星星
+  stars.forEach(s => {
     ctx.beginPath();
-    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-    ctx.fillStyle=`rgba(255,255,255, ${0.25 + Math.sin(Date.now()*s.twinkle)*0.35})`;
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255, ${0.25 + Math.sin(Date.now() * s.twinkle) * 0.35})`;
     ctx.fill();
-  })
+  });
 
-  for(let i=particles.length-1;i>=0;i--){
+  // 更新火箭
+  for(let i = rockets.length - 1; i >= 0; i--){
+    rockets[i].update();
+    rockets[i].draw();
+
+    if(rockets[i].exploded){
+      rockets.splice(i, 1);
+    }
+  }
+
+  // 更新爆炸粒子
+  for(let i = particles.length - 1; i >= 0; i--){
     particles[i].update();
     particles[i].draw();
-    if(particles[i].alpha<=0) particles.splice(i,1);
+
+    if(particles[i].alpha <= 0){
+      particles.splice(i, 1);
+    }
   }
 }
 render();
