@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<title>点击烟花</title>
+<title>星空烟花</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{
@@ -20,6 +20,18 @@ const ctx = canvas.getContext("2d");
 function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
 resize();
 window.onresize=resize;
+
+// ========== 背景星星 ==========
+const stars = [];
+for(let i=0;i<250;i++){
+  stars.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 1.2,
+    twinkle: Math.random() * 0.02
+  })
+}
+
 let particles=[];
 class Particle{
   constructor(x,y,color){
@@ -40,16 +52,28 @@ class Particle{
     ctx.restore();
   }
 }
+
 document.addEventListener("click",e=>{
-  const colors=["#ff4757","#fffa65","#70a1ff","#2ed573","#ffa502"];
+  const colors=["#ff4757","#fffa65","#70a1ff","#2ed573","#ffa502","#ff6b81"];
   for(let i=0;i<80;i++){
     particles.push(new Particle(e.clientX,e.clientY,colors[Math.floor(Math.random()*colors.length)]))
   }
 })
+
 function render(){
   requestAnimationFrame(render);
-  ctx.fillStyle="rgba(0,0,0,0.1)";
+  // 深色渐变背景
+  ctx.fillStyle="rgba(5,5,18,0.12)";
   ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // 绘制闪烁背景星星
+  stars.forEach(s=>{
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255, ${0.3 + Math.sin(Date.now()*s.twinkle)*0.3})`;
+    ctx.fill();
+  })
+
   for(let i=particles.length-1;i>=0;i--){
     particles[i].update();particles[i].draw();
     if(particles[i].alpha<=0) particles.splice(i,1);
