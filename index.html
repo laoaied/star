@@ -1,106 +1,59 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>星空许愿</title>
+<meta charset="UTF-8" />
+<title>点击生成猫咪</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#000011;
-}
-/* 背景星星 */
-.star{
-  position:absolute;
-  background:#fff;
-  border-radius:50%;
-  animation: blink 3s ease-in-out infinite;
-}
-@keyframes blink {
-  0%{opacity:0.15}
-  50%{opacity:0.9}
-  100%{opacity:0.15}
-}
-/* 流星样式，原版向右下方飞 */
-.meteor{
-  position:absolute;
-  height:2px;
-  background:linear-gradient(90deg, #ffffff, rgba(255,255,255,0));
-  transform:rotate(30deg);
-  animation:meteorMove 1.2s linear forwards;
-}
-@keyframes meteorMove{
-  0%{opacity:1}
-  100%{
-    transform:translateX(280px) translateY(160px) rotate(30deg);
-    opacity:0;
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    overflow: hidden;
+    background: linear-gradient(135deg, #ffeaa7, #fab1a0, #fd79a8);
+    height: 100vh;
+    width: 100vw;
+    cursor: pointer;
   }
-}
-/* 许愿文字 */
-.wish-text{
-  position:absolute;
-  color:#fff;
-  font-size:20px;
-  pointer-events:none;
-  animation:textFade 2s ease-out forwards;
-}
-@keyframes textFade{
-  0%{opacity:0;transform:translateY(0px)}
-  20%{opacity:1}
-  100%{opacity:0;transform:translateY(-40px)}
-}
+  .cat {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    pointer-events: none;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    animation: pop 0.3s ease-out;
+  }
+  @keyframes pop {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+    80% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  }
 </style>
 </head>
 <body>
+
 <script>
-// 生成背景星星
-function createBgStar(){
-  const star = document.createElement('div');
-  star.className = 'star';
-  const size = Math.random() * 2.2 + 0.4;
-  star.style.width = size + 'px';
-  star.style.height = size + 'px';
-  star.style.left = Math.random() * 100 + '%';
-  star.style.top = Math.random() * 100 + '%';
-  star.style.animationDelay = Math.random()*2 + 's';
-  document.body.appendChild(star);
-}
-// 生成220颗背景星
-for(let i=0;i<220;i++) createBgStar();
+  const catImages = [
+    'cats/cat1.png',
+    'cats/cat2.png',
+    'cats/cat3.png'
+  ];
 
-// 点击触发流星+文字
-document.addEventListener('click', spawnEffect);
-document.addEventListener('touchstart',(e)=>{
-  e.preventDefault();
-  const touch = e.touches[0];
-  spawnEffect({clientX:touch.clientX, clientY:touch.clientY})
-})
+  document.addEventListener('click', (e) => {
+    const cat = document.createElement('div');
+    cat.classList.add('cat');
 
-function spawnEffect(e){
-  const x = e.clientX;
-  const y = e.clientY;
+    const randomCat = catImages[Math.floor(Math.random() * catImages.length)];
+    cat.style.backgroundImage = `url(${randomCat})`;
+    cat.style.left = e.clientX + 'px';
+    cat.style.top = e.clientY + 'px';
 
-  // 创建流星
-  const meteor = document.createElement('div');
-  meteor.className='meteor';
-  meteor.style.left = x+'px';
-  meteor.style.top = y+'px';
-  meteor.style.width = Math.random()*70 + 40 + 'px';
-  document.body.appendChild(meteor);
-  setTimeout(()=>meteor.remove(),1200);
+    const size = 80 + Math.random() * 80;
+    cat.style.width = size + 'px';
+    cat.style.height = size + 'px';
 
-  // 创建许愿文字
-  const text = document.createElement('div');
-  text.className = 'wish-text';
-  text.innerText = "愿望已随流星飞去";
-  text.style.left = x + 'px';
-  text.style.top = y - 25 + 'px';
-  document.body.appendChild(text);
-  setTimeout(()=>text.remove(),2000);
-}
+    document.body.appendChild(cat);
+  });
 </script>
+
 </body>
 </html>
