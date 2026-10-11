@@ -30,9 +30,9 @@
 </style>
 </head>
 <body>
-
 <script>
-  // 替换成在线猫咪图片，不用本地文件！
+// 页面加载完成后再绑定点击事件
+document.addEventListener('DOMContentLoaded', function(){
   const catImages = [
     "https://placekitten.com/100/100",
     "https://placekitten.com/101/101",
@@ -41,6 +41,7 @@
   ];
 
   document.addEventListener('click', (e) => {
+    alert("点击生效！"); // ✅ 测试用！点页面会弹出这个提示框
     const cat = document.createElement('div');
     cat.classList.add('cat');
 
@@ -55,7 +56,7 @@
 
     document.body.appendChild(cat);
   });
+})
 </script>
-
 </body>
 </html>
