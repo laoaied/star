@@ -127,6 +127,8 @@ bombBtn.addEventListener("click", ()=>{
 
 // ========== 辅助：判断是否移动端 ==========
 const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+// 手机端整体缩小系数：敌机/玩家/子弹 w/h 全部 × 这个
+const S = isMobile ? 0.72 : 1;
 
 // ========== 星空背景 ==========
 const stars = [];
@@ -172,8 +174,8 @@ function resetGame(){
   player = {
     x: canvas.width / 2,
     y: canvas.height - 120,
-    w: 44,
-    h: 44,
+    w: 44 * S,
+    h: 44 * S,
     speed: 6,
     cooldown: 0,
     fireRate: 8,
@@ -229,14 +231,14 @@ function updatePlayer(){
 
     // 普通子弹
     if(player.power === 1){
-      bullets.push({x:player.x,y:player.y-20,w:4,h:14,speed:12,damage:1,type:"normal"});
+      bullets.push({x:player.x,y:player.y-20,w:4*S,h:14*S,speed:12,damage:1,type:"normal"});
     }else if(player.power ===2){
-      bullets.push({x:player.x-12,y:player.y-16,w:4,h:14,speed:12,damage:1,type:"normal"});
-      bullets.push({x:player.x+12,y:player.y-16,w:4,h:14,speed:12,damage:1,type:"normal"});
+      bullets.push({x:player.x-12,y:player.y-16,w:4*S,h:14*S,speed:12,damage:1,type:"normal"});
+      bullets.push({x:player.x+12,y:player.y-16,w:4*S,h:14*S,speed:12,damage:1,type:"normal"});
     }else if(player.power >=3){
-      bullets.push({x:player.x,y:player.y-20,w:4,h:14,speed:12,damage:1,type:"normal"});
-      bullets.push({x:player.x-14,y:player.y-16,w:4,h:14,speed:12,damage:1, vx:-0.8,type:"normal"});
-      bullets.push({x:player.x+14,y:player.y-16,w:4,h:14,speed:12,damage:1, vx:0.8,type:"normal"});
+      bullets.push({x:player.x,y:player.y-20,w:4*S,h:14*S,speed:12,damage:1,type:"normal"});
+      bullets.push({x:player.x-14,y:player.y-16,w:4*S,h:14*S,speed:12,damage:1, vx:-0.8,type:"normal"});
+      bullets.push({x:player.x+14,y:player.y-16,w:4*S,h:14*S,speed:12,damage:1, vx:0.8,type:"normal"});
     }
 
     // ===== 机关枪Gun：扇形弹幕，等级越高子弹越多 =====
@@ -250,7 +252,7 @@ function updatePlayer(){
           x:player.x, y:player.y-20,
           vx: Math.cos(angle)*spd,
           vy: Math.sin(angle)*spd,
-          w:3,h:3,damage:0.4,type:"gun"
+          w:3*S,h:3*S,damage:0.4,type:"gun"
         });
       }
     }
@@ -261,7 +263,7 @@ function updatePlayer(){
       bullets.push({
         x:player.x+offset,y:player.y-18,
         vx:0, vy:-7,
-        w:6,h:10,speed:5,damage:1.2,type:"missile",turnSpeed:0.05
+        w:6*S,h:10*S,speed:5,damage:1.2,type:"missile",turnSpeed:0.05
       });
     }
   }
@@ -274,7 +276,7 @@ function updatePlayer(){
       bullets.push({
         x:ox, y:player.y-20,
         vx:0, vy:-14,
-        w:3, h:30, damage:0.08, type:"laser",
+        w:3*S, h:30*S, damage:0.08, type:"laser",
         pierce:true, refractCount:3, hitEnemies:new Set()
       });
     }
@@ -312,7 +314,7 @@ function updateWingmen(){
       bullets.push({
         x: w.x, y: w.y - 12,
         vx: 0, vy: -5,
-        w: 4, h: 8, speed: 5, damage: 0.8, type: "missile", turnSpeed: 0.04
+        w: 4*S, h: 8*S, speed: 5, damage: 0.8, type: "missile", turnSpeed: 0.04
       });
     }
   }
@@ -663,9 +665,9 @@ function spawnEnemy(){
     const col = shadeColor("#ff6b6b", -darken*100);
     enemy = {
       type, x: Math.random()*(canvas.width-60)+30, y: -40,
-      w: 32, h: 32,
+      w: 32 * S, h: 32 * S,
       hp: Math.ceil(2 * d.hpMul), maxHp: Math.ceil(2 * d.hpMul),
-      speed: Math.min(5, 2.2 + t*0.1),
+      speed: Math.min(5, 2.2 + t*0.1) * (isMobile ? 0.75 : 1),
       color: col, score: 100, dropRate: 0.20,
       shootTimer: 0, shootInterval: Math.max(45, 150 * d.shootMul)
     };
@@ -673,9 +675,9 @@ function spawnEnemy(){
     const col = shadeColor("#ffa94d", -darken*100);
     enemy = {
       type, x: Math.random()*(canvas.width-80)+40, y: -50,
-      w: 48, h: 48,
+      w: 48 * S, h: 48 * S,
       hp: Math.ceil(5 * d.hpMul), maxHp: Math.ceil(5 * d.hpMul),
-      speed: Math.min(4, 1.4 + t*0.07),
+      speed: Math.min(4, 1.4 + t*0.07) * (isMobile ? 0.75 : 1),
       color: col, score: 250, dropRate: 0.40,
       shootTimer: 0, shootInterval: Math.max(35, 100 * d.shootMul)
     };
@@ -683,9 +685,9 @@ function spawnEnemy(){
     // 小型自杀机，直接冲玩家，打中扣 2 血
     enemy = {
       type, x: Math.random()*(canvas.width-60)+30, y: -30,
-      w: 24, h: 24,
+      w: 24 * S, h: 24 * S,
       hp: Math.ceil(1 * d.hpMul), maxHp: Math.ceil(1 * d.hpMul),
-      speed: Math.min(6, 3.5 + t*0.08),
+      speed: Math.min(6, 3.5 + t*0.08) * (isMobile ? 0.75 : 1),
       color: shadeColor("#ff3377", -darken*100),
       score: 150, dropRate: 0.10,
       drone: true,
@@ -695,9 +697,9 @@ function spawnEnemy(){
     // 停在上半屏瞄准玩家，射慢速但大号单发弹
     enemy = {
       type, x: Math.random()*(canvas.width-80)+40, y: -50,
-      w: 40, h: 40,
+      w: 40 * S, h: 40 * S,
       hp: Math.ceil(4 * d.hpMul), maxHp: Math.ceil(4 * d.hpMul),
-      speed: 0.8 + t*0.03, // 慢慢飘
+      speed: (0.8 + t*0.03) * (isMobile ? 0.75 : 1),
       color: shadeColor("#7744ff", -darken*100),
       score: 300, dropRate: 0.35,
       sniper: true,
@@ -707,9 +709,9 @@ function spawnEnemy(){
     // bomber：大机，螺旋弹幕
     enemy = {
       type, x: Math.random()*(canvas.width-100)+50, y: -60,
-      w: 60, h: 60,
+      w: 60 * S, h: 60 * S,
       hp: Math.ceil(10 * d.hpMul), maxHp: Math.ceil(10 * d.hpMul),
-      speed: 1.0 + t*0.04,
+      speed: (1.0 + t*0.04) * (isMobile ? 0.75 : 1),
       color: shadeColor("#00cc88", -darken*100),
       score: 500, dropRate: 0.55,
       bomber: true, spiralAngle: 0,
@@ -764,7 +766,7 @@ function updateEnemies(){
         enemyBullets.push({
           x: e.x, y: e.y + e.h/2,
           vx: dx/len*bulletSpeed, vy: dy/len*bulletSpeed,
-          w: 10, h: 10, type: "sniper"
+          w: 10*S, h: 10*S, type: "sniper"
         });
       }
     } else if(e.type === "bomber"){
@@ -780,7 +782,7 @@ function updateEnemies(){
           enemyBullets.push({
             x: e.x, y: e.y,
             vx: Math.cos(ang)*bulletSpeed, vy: Math.sin(ang)*bulletSpeed,
-            w: 7, h: 7, type: "bomber"
+            w: 7*S, h: 7*S, type: "bomber"
           });
         }
       }
@@ -798,7 +800,7 @@ function updateEnemies(){
             x: e.x, y: e.y + e.h/2,
             vx: Math.cos(ang)*bulletSpeed,
             vy: Math.sin(ang)*bulletSpeed,
-            w: 6, h: 6, type: "normal"
+            w: 6*S, h: 6*S, type: "normal"
           });
         }
       }
@@ -902,7 +904,7 @@ function spawnItem(x,y){
   else type="heal";
   items.push({
     x,y,
-    w:26,h:26,
+    w:26*S,h:26*S,
     speed:2.2,
     type
   });
