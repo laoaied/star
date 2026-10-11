@@ -16,6 +16,8 @@
     position: absolute;
     width: 120px;
     height: 120px;
+    /* 关键：定位中心点在鼠标点击位置 */
+    transform: translate(-50%, -50%);
     pointer-events: none;
     background-size: contain;
     background-repeat: no-repeat;
@@ -31,17 +33,13 @@
 </head>
 <body>
 <script>
-// 页面加载完成后再绑定点击事件
 document.addEventListener('DOMContentLoaded', function(){
+  // 国内稳定的猫咪图片
   const catImages = [
-    "https://placekitten.com/100/100",
-    "https://placekitten.com/101/101",
-    "https://placekitten.com/102/102",
-    "https://placekitten.com/103/103"
+    "https://p3-flow-image-sign.byteimg.com/tos-cn-i-a9rns2rl98/02001400893c4048990024212004d311~tplv-a9rns2rl98-image.image"
   ];
 
   document.addEventListener('click', (e) => {
-    alert("点击生效！"); // ✅ 测试用！点页面会弹出这个提示框
     const cat = document.createElement('div');
     cat.classList.add('cat');
 
